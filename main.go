@@ -16,7 +16,7 @@ import (
 	"github.com/docker/docker/api/types"
 	tcontainer "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
-	"github.com/go-kit/kit/log"
+	"github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -134,7 +134,7 @@ func (c *dockerHealthCollector) collectMetrics(ch chan<- prometheus.Metric) {
 }
 
 func (c *dockerHealthCollector) collectContainer() {
-	containers, err := c.containerClient.ContainerList(context.Background(), types.ContainerListOptions{All: true})
+	containers, err := c.containerClient.ContainerList(context.Background(), tcontainer.ListOptions{All: true})
 	errCheck(err)
 	c.containerInfoCache = []types.ContainerJSON{}
 
@@ -190,7 +190,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	client, err := client.NewEnvClient()
+	client, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	errCheck(err)
 	defer client.Close()
 

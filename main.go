@@ -16,6 +16,7 @@ import (
 	"github.com/docker/docker/api/types"
 	tcontainer "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/errdefs"
 	"github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -140,8 +141,13 @@ func (c *dockerHealthCollector) collectContainer() {
 
 	for _, container := range containers {
 		info, err := c.containerClient.ContainerInspect(context.Background(), container.ID)
-		errCheck(err)
-		c.containerInfoCache = append(c.containerInfoCache, info)
+		if err != nil {
+			if errdefs.IsNotFound(err) {
+				errorLogger.Log("message", "Container disappeared during inspect", "container_id", container.ID)
+				continue
+			}
+			errCheck(err)
+		}
 
 		if info.Config == nil {
 			info.Config = &tcontainer.Config{Labels: map[string]string{}}
@@ -150,6 +156,8 @@ func (c *dockerHealthCollector) collectContainer() {
 		if info.State.Health == nil {
 			info.State.Health = &types.Health{Status: "none"}
 		}
+
+		c.containerInfoCache = append(c.containerInfoCache, info)
 	}
 }
 

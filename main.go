@@ -151,7 +151,6 @@ func (c *dockerHealthCollector) collectContainer() {
 					"status", container.Status,
 					"image", container.Image,
 				)
-				errorLogger.Log("message", "Container disappeared during inspect", "container_id", container.ID)
 				continue
 			}
 			errCheck(err)

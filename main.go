@@ -143,6 +143,14 @@ func (c *dockerHealthCollector) collectContainer() {
 		info, err := c.containerClient.ContainerInspect(context.Background(), container.ID)
 		if err != nil {
 			if errdefs.IsNotFound(err) {
+				normalLogger.Log(
+					"message", "Container not found during inspect",
+					"container_id", container.ID,
+					"names", container.Names,
+					"state", container.State,
+					"status", container.Status,
+					"image", container.Image,
+				)
 				errorLogger.Log("message", "Container disappeared during inspect", "container_id", container.ID)
 				continue
 			}
